@@ -27,13 +27,27 @@ def make_reservation(people):
 
   :param people: list of people, where each person is a dictionary with 'fname', 'lname', 'phone', and 'email' fields.
   """
+  import logging
   from selenium import webdriver
   from selenium.webdriver import ActionChains
   from selenium.webdriver.common.keys import Keys
 
+  # logging
+  logging.basicConfig(
+    level=logging.INFO,
+    # format="%(asctime)s %(levelname)s %(threadName)s %(name)s %(message)s",
+    format="%(asctime)s %(message)s",
+    datefmt='%Y-%m-%d %H:%M:%S',
+    filename='logs/reservations.txt',
+    filemode='a'
+  )
+  logger = logging.getLogger('status')
 
   # loop through all the people we want to make reservations for
   for person in people:
+
+    logger.info('starting for {} {}'.format(person['fname'], person['lname']))
+
     # open the driver
     url = 'https://silverlakereservations.as.me'
     driver = webdriver.Chrome()
@@ -53,6 +67,9 @@ def make_reservation(people):
     # select all available options
     num_datetimes = 0
     datetime_options = driver.find_elements_by_css_selector('#dates-and-times > fieldset > div > div > div > ul > li > a')
+
+    logger.info('found {} available datetimes'.format( len(datetime_options) ))
+
     for option in datetime_options:
       # try to click em all! (some are not attached to page)
       try:
@@ -94,10 +111,10 @@ def make_reservation(people):
 
     if reservation_submitted:
       # log it
-      print('submitted {} reservations for {} {}'.format(num_datetimes, person['fname'], person['lname']))
+      logger.info('submitted {} reservations for {} {}'.format(num_datetimes, person['fname'], person['lname']))
     else:
       # log it
-      print('no reservation available for {} {}'.format(person['fname'], person['lname']))
+      logger.info('no reservation available for {} {}'.format(person['fname'], person['lname']))
 
     # finished!
     driver.close()
@@ -108,4 +125,17 @@ def make_reservation(people):
 
 # pause for a second
 # ActionChains(driver).pause(1).perform()
+
+
+# if running this file directly...
+if __name__ == '__main__':
+  people = [
+    {
+      'fname': 'Foo',
+      'lname': 'Barstein',
+      'phone': '6462129988',
+      'email': 'foo@barstein.com'
+    },
+  ]
+  make_reservation(people)
 
