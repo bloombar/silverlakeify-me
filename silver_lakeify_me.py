@@ -290,13 +290,13 @@ if __name__ == '__main__':
   # make_reservation(people[0])
 
   # schedule.every(2).day.at("11:30").do(make_reservation, person)
-  schedule.every(5).minutes.do(make_reservation, people[2])
+  schedule.every(2).minutes.do(make_reservation, people[2])
 
   # for person in people:
   #   # schedule every day at 11:30AM
   #   schedule.every().day.at("11:30").do(make_reservation, person)
 
-  # # flush out pending jobs
+  # flush out pending jobs
   while True:
       schedule.run_pending()
       time.sleep(30)
