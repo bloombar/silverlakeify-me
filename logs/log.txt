@@ -1,0 +1,2 @@
+2020-07-01 16:39:53 appointment type: Silver Lake (11:30 and 3:30 Sessions)
+2020-07-01 16:39:55 no available datetimes
