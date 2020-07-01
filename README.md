@@ -20,13 +20,31 @@ This program depends upon a few Python modules:
 - schedule
 - [WeDriver for Chrome](https://sites.google.com/a/chromium.org/chromedriver/downloads) - download the appropriate one for your version of Google Chrome
 
+### Installing modules
+
 Install `selenium` and `schedule` via `pip`:
+
+You can either install individually:
+
+```bash
+pip install schedule
+pip install selenium
+```
+
+... or install using the dependency file:
 
 ```bash
 pip install -r requirements.txt
 ```
 
-The Webdriver for Chrome (a.k.a. the file named chromedriver) must be installed in either:
+### Installing WebDriver for Chrome
+
+The Webdriver for Chrome (a.k.a. the file named chromedriver) must be installed separately.
+
+- [Download the webdriver](https://sites.google.com/a/chromium.org/chromedriver/downloads) that is suitable for the version of Google Chrome you have installed
+- This will give you a file named `chromedriver` or `chromedriver.exe`.
+
+Place the `chromedriver` file into a directory that is on your system's PATH. I.e., place it...
 
 - in the same directory as chrome.exe on Windows (e.g. C:\Program Files\Google\Chrome\Application)
 - in a directory that is included in the PATH on Mac OS X (e.g. /usr/local/bin)
