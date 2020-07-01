@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """
 Sign up for Silver Lake
 
@@ -19,6 +20,7 @@ def make_reservation(person):
 
   :param people: a person as a dictionary with 'fname', 'lname', 'phone', and 'email' fields.
   """
+  
   import logging
   from selenium import webdriver
   from selenium.webdriver import ActionChains
@@ -173,7 +175,7 @@ def make_reservation(person):
       email.send_keys(person['email'])
 
       # pause for a second
-      ActionChains(driver).pause(2).perform()
+      ActionChains(driver).pause(1).perform()
 
       # submit the reservation
       #submit button id #submit-forms-nopay
@@ -299,4 +301,4 @@ if __name__ == '__main__':
   # flush out pending jobs
   while True:
       schedule.run_pending()
-      time.sleep(30)
+      time.sleep(15)
