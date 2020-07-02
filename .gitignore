@@ -1,3 +1,6 @@
+# custom logs
+logs/*
+
 # Compiled python files
 *.py[oc]
 *$py.class
