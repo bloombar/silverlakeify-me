@@ -51,6 +51,7 @@ def make_reservation(person):
   all_appointment_types = driver.find_elements_by_css_selector('#step-pick-appointment > div.pane-content > div.select.select-type > div')
   all_appointment_types = [t for t in all_appointment_types if t.is_displayed()] # limit to those that are visible
   selected_appointment_types = []  # we will select a subset of all types
+  found_appointment_type = False
   # loop through all types
   for atype in all_appointment_types:
     try:
@@ -59,15 +60,20 @@ def make_reservation(person):
       # check whether it's of the kind we want to select
       if '11:30 and 3:30' in title:
       # if 'Senior Swim' in title:
+        found_appointment_type = True
         selected_appointment_types.append(atype) # add the the list
     except:
       pass
+
+  # verify that we can find the appointment type we're looking for
+  if not found_appointment_type:
+    logger.info('appointment type not found: {}'.format(title))
 
   # loop through the appointment types we've picked
   for atype in selected_appointment_types:
     # grab this appointment type's title, if any
     title = atype.find_element_by_tag_name('label').text
-    logger.info('appointment type: {}'.format(title))
+    # logger.info('appointment type: {}'.format(title))
 
     # click it
     atype.click()
@@ -81,7 +87,7 @@ def make_reservation(person):
 
     # check whether there are any available datetimes
     if len(available_datetimes) <= 0:
-      logger.info('no available datetimes')
+      # logger.info('no available datetimes')
       continue
 
     # loop through each datetime
@@ -292,7 +298,7 @@ if __name__ == '__main__':
   # make_reservation(people[0])
 
   # schedule.every(2).day.at("11:30").do(make_reservation, person)
-  schedule.every(2).minutes.do(make_reservation, people[2])
+  schedule.every(1).minutes.do(make_reservation, people[2])
 
   # for person in people:
   #   # schedule every day at 11:30AM
