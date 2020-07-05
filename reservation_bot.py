@@ -205,9 +205,10 @@ class ReservationBot():
       # append to list of dates
       dates.append(date_data)
 
-    # log it
-    log_dates = ','.join([d['date'] for d in dates])
-    self.logger.info('Found dates: {}'.format(log_dates))
+    # if you got it, log it
+    if len(dates) > 0:
+      log_dates = ','.join([d['date'] for d in dates])
+      self.logger.info('Found dates: {}'.format(log_dates))
 
     return dates
 
