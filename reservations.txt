@@ -1,5 +1,0 @@
-July 3,11:30am,Silver Lake (11:30 and 3:30 Sessions),Katya,Bloomberg
-July 3,3:30pm,Silver Lake (11:30 and 3:30 Sessions),Katya,Bloomberg
-July 4,11:30am,Silver Lake (11:30 and 3:30 Sessions),Katya,Bloomberg
-July 4,3:30pm,Silver Lake (11:30 and 3:30 Sessions),Katya,Bloomberg
-July 5,11:30am,Silver Lake (11:30 and 3:30 Sessions),Katya,Bloomberg

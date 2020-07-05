@@ -1,5 +1,6 @@
 # custom logs
 logs/*
+reservations.txt
 
 # Compiled python files
 *.py[oc]
