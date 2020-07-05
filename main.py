@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """
 Operate a Silver Lake Reservation Bot.
 """
