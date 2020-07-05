@@ -52,14 +52,17 @@ def make_reservation(person):
   all_appointment_types = [t for t in all_appointment_types if t.is_displayed()] # limit to those that are visible
   selected_appointment_types = []  # we will select a subset of all types
   found_appointment_type = False
+
+  # desired_appointment_type = 'Senior Swim'
+  desired_appointment_type = '11:30 and 3:30'
+
   # loop through all types
   for atype in all_appointment_types:
     try:
       # grab this appointment type's name, if any
       title = atype.find_element_by_tag_name('label').text
       # check whether it's of the kind we want to select
-      if '11:30 and 3:30' in title:
-      # if 'Senior Swim' in title:
+      if desired_appointment_type in title:
         found_appointment_type = True
         selected_appointment_types.append(atype) # add the the list
     except:
@@ -67,8 +70,9 @@ def make_reservation(person):
 
   # verify that we can find the appointment type we're looking for
   if not found_appointment_type:
-    logger.info('appointment type not found: {}'.format(title))
-
+    logger.info('appointment type not found: {}'.format(desired_appointment_type))
+    return
+    
   # loop through the appointment types we've picked
   for atype in selected_appointment_types:
     # grab this appointment type's title, if any
