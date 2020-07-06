@@ -228,7 +228,7 @@ class ReservationBot():
     for reservation in reservations:
       # print('==', date['date'], date['times'], '==')
       # loop through all existing reservations
-      for date in good_dates:
+      for date in dates:
         # check whether the date and time are already in our reservations
         date_matches = reservation['date'] == date['date'] # dates match
         time_matches = reservation['time'] in [d['time'] for d in date['times']]  # existing reservation time is present in available times
@@ -252,7 +252,7 @@ class ReservationBot():
     good_dates = dates.copy()  # assume they're all good for now
     
     # loop through all dates
-    for date in good_dates:
+    for date in dates:
       day = date['day']
 
       # leave dates for which the user has not expressed preferences
@@ -264,6 +264,8 @@ class ReservationBot():
       
       # remove dates for which the preferred time is not available
       if preferred_time not in date['times']:
+        # the preferred time is not available
+        self.logger.info('Reservation for {} not available at preferred time {}... skipping.'.format(date['date'], preferred_time))
         good_dates.remove(date) # remove it from the list
         continue
 
@@ -284,6 +286,8 @@ class ReservationBot():
     for d in good_dates:
       # check how many times are available this day
       if len(d['times']) > 1:
+        # there are multiple times available on this date... got with first
+        self.logger.info('Reservation for {} available at multiple times... skipping all but first time.'.format(d['date']))
         d['times'] = d['times'][0:1] # remove all but the first available time
     # return the updated list
     return good_dates
@@ -313,13 +317,14 @@ class ReservationBot():
       count = counts.get(str(week), 0)
       # if we are over the limit, remove this date
       if max_per_week - count <= 0:
+        # we have reached the weekly limit... no more
+        self.logger.info('Weekly limit reached for {} {}... skipping {}.'.format(person.first_name, person.last_name, date['date']))
         good_dates.remove(date) # remove it from consideration
       else:
         counts[str(week)] = counts.get(str(week), 0) + 1 # increment by one
 
     # return the updated list
     return good_dates
-
 
 
   def get_start_of_week(self, date):
