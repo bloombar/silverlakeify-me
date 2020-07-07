@@ -64,7 +64,9 @@ class ReservationBot():
         self.save_reservation(dates, person)
 
         # save screenshot
-        self.save_screenshot(dates, person)
+        clean_dates = '-'.join(['{}{}'.format(d['date'], '-'.join([t['time'] for t in d['times']])) for d in dates])  # string of dates
+        filename = 'logs/{}-{}-{}.png'.format(person.last_name, person.first_name, clean_dates)
+        self.save_screenshot(filename)
 
     except Exception as e:
       # the desired appointment type was not found
@@ -148,6 +150,10 @@ class ReservationBot():
     if len(selected_appointment_types) == 0:
       # no appointment type found
       self.logger.info('No "{}" appointment type found.'.format(desired_appointment_type))
+      # save screenshot
+      filename = 'logs/error-none-found-{}.png'.format(datetime.date.today())
+      self.save_screenshot(filename)
+
       # raise an exception
       raise Exception('No "{}" appointment type found.'.format(desired_appointment_type))
 
@@ -483,20 +489,16 @@ class ReservationBot():
       # this is fatal.  Make sure program does not continue...
       raise e
 
-  def save_screenshot(self, dates, person):
+  def save_screenshot(self, filename):
     """
     Capture a screenshot of the confirmation screen, for our records.
-    :param dates: The dates of our reservations.
-    :param person: The person for whom to make the reservation.
+    :param filename: The name of the file to save.
     """
-    clean_dates = '-'.join(['{}{}'.format(d['date'], '-'.join([t['time'] for t in d['times']])) for d in dates])  # string of dates
-    filename = 'logs/{}-{}-{}.png'.format(person.last_name, person.first_name, clean_dates)
     filename = filename.lower()
     filename = filename.replace(' ', '')
     filename = filename.replace(':', '')
     filename = filename.replace('(', '-')
     filename = filename.replace(')', '-')
-    filename = filename.lower()
     # body = driver.find_element_by_tag_name('body')
     # body.save_screeenshot(filename)
     try:
