@@ -17,14 +17,22 @@ from selenium.webdriver.common.keys import Keys
 class ReservationBot():
 
   def __init__(self, person, appointment_type='11:30 and 3:30', max_per_week=3, hidden=True, log=True):
+    """
+    Instantiate the bot object with settings.
+    :param person: The person object for whom to make a reservation.
+    :param appointment_type: A string that uniquely matches one of the available appointment types, such as "11:30 and 3:30" or "Senior Swim".
+    :param max_per_week: The maximum number of reservations allowed per week.  Defaults to 3.
+    :param hidden: Whether to show the web browser or keep it hidden.
+    """
     # start logging
     if log:
       self.start_logging('logs/log.txt')
 
-    # open the web site in google chrome
-    self.start_session('https://silverlakereservations.as.me', hidden)
-
     try:
+
+      # open the web site in google chrome
+      self.start_session('https://silverlakereservations.as.me', hidden)
+
       # get available dates for the desired appointment type
       dates = self.get_available_dates(appointment_type)
       # print('\nall:')
@@ -70,15 +78,17 @@ class ReservationBot():
 
     except Exception as e:
       # the desired appointment type was not found
-      self.logger.info('Error finding appointment type: {}'.format(repr(e)))
-      
+      self.logger.info('Error: {}'.format(repr(e)))
+
     # open the web site in google chrome
-    self.end_session()
+    if hasattr(self, 'driver'):
+      self.end_session()
 
   def start_session(self, url, hidden=True):
     """
     Load the web site in google chrome by using the webdriver.  
-    :param url: The web site to load
+    :param url: The web site to load.
+    :param hidden: Whether to show the web browser.
     """
     # open the webdriver
     chrome_options = webdriver.ChromeOptions()  # set some options
@@ -100,6 +110,7 @@ class ReservationBot():
   def start_logging(self, filename='log.txt', logger_name='status', level=logging.INFO):
     """
     Enable logging.
+    :param filename: The filename of the log file.
     :param logger_name: A label for this logger.
     :param filename: A file in which to save the logs.
     """
@@ -119,7 +130,7 @@ class ReservationBot():
   def pause(self, seconds):
     """
     Pause for specified number of seconds.
-    :param seconds: number of seconds to pause.
+    :param seconds: The number of seconds to pause.
     """
     ActionChains(self.driver).pause(2).perform()
 
@@ -171,7 +182,8 @@ class ReservationBot():
 
   def get_available_dates(self, appointment_type):
     """
-    Get a list of all available date/time combinations
+    Get a list of all available date/time combinations.
+    :param appointment_type: The type of appointment to search dates/times for.
     """
 
     # first, select the appropriate type of appointment
@@ -302,6 +314,7 @@ class ReservationBot():
     """
     Limit the number of reservations we book per week.
     :param dates: A list of dates.
+    :param person: The person for whom to limit reservations.
     :param max_per_week: The maximum number of reservations per week we desire.
     :returns: The updated list of dates
     """
@@ -450,6 +463,7 @@ class ReservationBot():
   def enter_personal_details(self, person):
     """
     Enter the person's details into the form.
+    :param person: The person for whom to enter details.
     """
     # try to complete reservation form
     try:
@@ -465,8 +479,7 @@ class ReservationBot():
 
     except Exception as e:
       # error occurred
-      self.logger.info('Error filling in personal details: {}'.format(e))
-      # raise e
+      raise Exception('Error filling in personal details: {}'.format(e))
 
     # pause to allow dynamic content to load
     self.pause(1)
@@ -485,9 +498,8 @@ class ReservationBot():
       self.pause(2)
     except Exception as e:
       # handle failure
-      self.logger.info('Error submitting form: {}'.format(e))
       # this is fatal.  Make sure program does not continue...
-      raise e
+      raise Exception('Error submitting form: {}'.format(e))
 
   def save_screenshot(self, filename):
     """
