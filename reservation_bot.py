@@ -27,6 +27,7 @@ class ReservationBot():
     # start logging
     if log:
       self.start_logging('logs/log.txt')
+      self.log('Starting for {} {}'.format(person.first_name, person.last_name))
 
     # loop through each desired appointment_type
     for appointment_type in appointment_types:
@@ -374,7 +375,7 @@ class ReservationBot():
       else:
         counts[str(week)] = counts.get(str(week), 0) + 1 # increment by one
 
-    self.log("Found {} dates within the weeekly limit for {} {}.".format(len(good_dates), person.first_name, person.last_name))
+    self.log("Found {} dates within the weeekly limit.".format(len(good_dates)))
 
     # return the updated list
     return good_dates
