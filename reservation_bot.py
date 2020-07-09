@@ -78,7 +78,7 @@ class ReservationBot():
 
     except Exception as e:
       # the desired appointment type was not found
-      self.logger.info('Error: {}'.format(repr(e)))
+      self.log('Error: {}'.format(repr(e)))
 
     # open the web site in google chrome
     if hasattr(self, 'driver'):
@@ -127,6 +127,13 @@ class ReservationBot():
     )
     self.logger = logging.getLogger(logger_name)
 
+  def log(self, msg):
+    """
+    Logs a message.
+    :param msg: The message to log.
+    """
+    self.logger.info(msg)
+
   def pause(self, seconds):
     """
     Pause for specified number of seconds.
@@ -160,7 +167,7 @@ class ReservationBot():
     # make sure we found the target appointment type
     if len(selected_appointment_types) == 0:
       # no appointment type found
-      self.logger.info('No "{}" appointment type found.'.format(desired_appointment_type))
+      self.log('No "{}" appointment type found.'.format(desired_appointment_type))
       # save screenshot
       filename = 'logs/error-none-found-{}.png'.format(datetime.date.today())
       self.save_screenshot(filename)
@@ -192,6 +199,8 @@ class ReservationBot():
     # select all dates - each date is in its own fieldset
     available_dates = self.driver.find_elements_by_css_selector('#dates-and-times > fieldset')
     available_dates = [d for d in available_dates if d.is_displayed()] # limit to those that are visible
+
+    self.log("Found {} available dates.".format(len(available_dates)))
 
     # loop through each date and append a nicely-formatted version to a list
     dates = []
@@ -226,7 +235,7 @@ class ReservationBot():
     # if you got it, log it
     if len(dates) > 0:
       log_dates = ','.join([d['date'] for d in dates])
-      self.logger.info('Found dates: {}'.format(log_dates))
+      self.log('Found dates: {}'.format(log_dates))
 
     return dates
 
@@ -253,10 +262,13 @@ class ReservationBot():
         # print(reservation['date'], date['date'], date_matches, '|', reservation['time'], [d['time'] for d in date['times']], time_matches)
         if (date_matches and time_matches) or (date_matches and not match_times):
           # we have a reservation that matches
-          self.logger.info('Reservation for {} at {} aready exists... skipping.'.format(reservation['date'], reservation['time']))
+          self.log('Reservation for {} at {} aready exists... skipping.'.format(reservation['date'], reservation['time']))
           # remove it from the good dates
           good_dates.remove(date)
-          break # quit this loop
+          break  # quit this loop
+        
+    self.log("Found {} unreserved dates.".format(len(good_dates)))
+
     return good_dates
 
   def filter_by_time_preferences(self, dates, person):
@@ -283,12 +295,20 @@ class ReservationBot():
       # remove dates for which the preferred time is not available
       if preferred_time not in date['times']:
         # the preferred time is not available
-        self.logger.info('Reservation for {} not available at preferred time {}... skipping.'.format(date['date'], preferred_time))
+        self.log('Reservation for {} not available at preferred time {}... skipping.'.format(date['date'], preferred_time))
         good_dates.remove(date) # remove it from the list
         continue
 
+      # find the position of this date in the list of good dates
+      pos = good_dates.index(date)
+
       # replace list of times with only preferred time
       date['times'] = [preferred_time]
+
+      # update the good dates list with this change
+      good_dates[pos] = date
+
+    self.log("Found {} preferred times.".format(len(good_dates)))
 
     return good_dates
 
@@ -305,8 +325,10 @@ class ReservationBot():
       # check how many times are available this day
       if len(d['times']) > 1:
         # there are multiple times available on this date... got with first
-        self.logger.info('Reservation for {} available at multiple times... skipping all but first time.'.format(d['date']))
+        self.log('Reservation for {} available at multiple times... skipping all but first time.'.format(d['date']))
         d['times'] = d['times'][0:1] # remove all but the first available time
+        self.log("Limiting to only 1 reservation on {}.".format(d['date']))
+
     # return the updated list
     return good_dates
 
@@ -337,10 +359,12 @@ class ReservationBot():
       # if we are over the limit, remove this date
       if max_per_week - count <= 0:
         # we have reached the weekly limit... no more
-        self.logger.info('Weekly limit reached for {} {}... skipping {}.'.format(person.first_name, person.last_name, date['date']))
+        self.log('Weekly limit reached for {} {}... skipping {}.'.format(person.first_name, person.last_name, date['date']))
         good_dates.remove(date) # remove it from consideration
       else:
         counts[str(week)] = counts.get(str(week), 0) + 1 # increment by one
+
+    self.log("Found {} dates within the weeekly limit for {} {}.".format(len(good_dates), person.first_name, person.last_name))
 
     # return the updated list
     return good_dates
@@ -451,10 +475,13 @@ class ReservationBot():
       # there are some invisible continue buttons we must ignore
       continue_buttons = self.driver.find_elements_by_css_selector('#selected-times-container > a.btn-next-step')
       visible_buttons = [btn for btn in continue_buttons if btn.is_displayed()]  # limit to those that are visible
-      # self.logger.info('{} total, {} visible'.format(len(continue_buttons), len(visible_buttons)))
+      self.log('{} total, {} visible'.format(len(continue_buttons), len(visible_buttons)))
       # click the button... there should only be one visible one
       for btn in visible_buttons:
-        # self.logger.info('clicking to continue with {} selections'.format(num_selections))
+        if hasattr(btn, 'text'):
+          self.log('Clicking {} button.'.format(btn.text))
+        else:
+          self.log('Clicking anonymous button.')
         btn.click()
 
     # pause to allow dynamic content to load
@@ -492,7 +519,7 @@ class ReservationBot():
     try:
       submit = self.driver.find_element_by_css_selector('#custom-forms > div > div > input')
       submit.click()
-      self.logger.info('submitted the form')
+      self.log('Submitted the form.')
 
       # pause to allow content to load
       self.pause(2)
@@ -515,9 +542,9 @@ class ReservationBot():
     # body.save_screeenshot(filename)
     try:
       self.driver.save_screenshot(filename)
-      self.logger.info('Saved screenshot to {}'.format(filename))
+      self.log('Saved screenshot to {}'.format(filename))
     except Exception as e:
-      self.logger.info('Error saving screenshot to {}: {}'.format(filename, e))
+      self.log('Error saving screenshot to {}: {}'.format(filename, e))
       # not a catastrophic failure
 
   def save_reservation(self, dates, person):
@@ -528,7 +555,7 @@ class ReservationBot():
     """
     try:
       # save these reservations to our file
-      self.logger.info('Saving reservation to reservations.txt')
+      self.log('Saving reservation to reservations.txt')
       f = open('reservations.txt', 'a')
       # loop through each date
       for date in dates:
@@ -543,10 +570,10 @@ class ReservationBot():
             lname=person.last_name
           )
           f.write(line)
-          self.logger.info('Saved line: {}'.format(line))
+          self.log('Saved line: {}'.format(line))
       f.close()
     except Exception as e:
-      self.logger.info('Error saving reservation the file: {}'.format(e))
+      self.log('Error saving reservation the file: {}'.format(e))
 
 # try it out
 if __name__ == '__main__':
