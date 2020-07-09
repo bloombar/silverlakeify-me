@@ -26,10 +26,10 @@ def main():
   # appointment_type = 'Senior Swim' # or '11:30 and 3:30 Sessions'
   # person = Person('Morris', 'Chang', '9148179962', 'chang_m@mailinator.com', preferences)
 
-  appointment_type = '11:30 and 3:30 Sessions' # or 'Senior Swim'
+  appointment_types = ['11:30 and 2:30', '5:30'] # or 'Senior Swim'
   person = Person('Katya', 'Bloomberg', '9148179962', 'katya@plasticpast.com', preferences)
   # bot = ReservationBot(person, appointment_type=appointment_type, hidden=False)
-  schedule.every(1).minutes.do(ReservationBot, person=person, appointment_type=appointment_type, hidden=True)
+  schedule.every(1).minutes.do(ReservationBot, person=person, appointment_types=appointment_types, hidden=True)
 
   # flush out pending jobs
   while True:

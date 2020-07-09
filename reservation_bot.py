@@ -16,11 +16,11 @@ from selenium.webdriver.common.keys import Keys
 
 class ReservationBot():
 
-  def __init__(self, person, appointment_type='11:30 and 3:30', max_per_week=3, hidden=True, log=True):
+  def __init__(self, person, appointment_types=['11:30 and 2:30', '5:30'], max_per_week=3, hidden=True, log=True):
     """
     Instantiate the bot object with settings.
     :param person: The person object for whom to make a reservation.
-    :param appointment_type: A string that uniquely matches one of the available appointment types, such as "11:30 and 3:30" or "Senior Swim".
+    :param appointment_types: A list of strings that uniquely match one of the available appointment types, such as "11:30 and 3:30" or "Senior Swim".
     :param max_per_week: The maximum number of reservations allowed per week.  Defaults to 3.
     :param hidden: Whether to show the web browser or keep it hidden.
     """
@@ -28,64 +28,69 @@ class ReservationBot():
     if log:
       self.start_logging('logs/log.txt')
 
-    try:
+    # loop through each desired appointment_type
+    for appointment_type in appointment_types:
+
+      try:
+
+        # open the web site in google chrome
+        self.start_session('https://silverlakereservations.as.me', hidden)
+
+        # get available dates for the desired appointment type
+        dates = self.get_available_dates(appointment_type)
+        # print('\nall:')
+        # [print(d['date'], d['day'], d['times']) for d in dates]
+
+        # filename = 'logs/no-dates-{}.png'.format(datetime.date.today())
+        # self.save_screenshot(filename)
+
+        # filter the available dates
+
+        dates = self.filter_by_unreserved(dates, person) # by only those that this person has not yet reserved
+        # print('\nunreserved dates:')
+        # [print(d['date'], d['day'], d['times']) for d in dates]
+
+        dates = self.filter_by_time_preferences(dates, person) # by only those with times that match the person's preferences
+        # print('\npreferred dates:')
+        # [print(d['date'], d['day'], d['times']) for d in dates]
+
+        dates = self.limit_per_day(dates) # for any day with multiple times, keep only the first time
+        # print('\nlimit 1 per day:')
+        # [print(d['date'], d['day'], d['times']) for d in dates]
+
+        dates = self.limit_per_week(dates, person, max_per_week) # limit the number of reservations per week we book
+        # print('\nlimit 3 per week:')
+        # [print(d['date'], d['day'], d['times']) for d in dates]
+        
+        # proceed if we have dates to reserve
+        if len(dates) > 0:
+
+          # click on the date/times we want to reserve
+          self.select_dates(dates)
+
+          # fill in personal details
+          self.enter_personal_details(person)
+
+          # submit the form
+          self.submit_form()
+
+          # save reservation
+          self.save_reservation(dates, person)
+
+          # save screenshot
+          clean_dates = '-'.join(['{}{}'.format(d['date'], '-'.join([t['time'] for t in d['times']])) for d in dates])  # string of dates
+          filename = 'logs/{}-{}-{}.png'.format(person.last_name, person.first_name, clean_dates)
+          self.save_screenshot(filename)
+
+      except Exception as e:
+        # the desired appointment type was not found
+        self.log('Error: {}'.format(repr(e)))
 
       # open the web site in google chrome
-      self.start_session('https://silverlakereservations.as.me', hidden)
+      if hasattr(self, 'driver'):
+        self.end_session()
 
-      # get available dates for the desired appointment type
-      dates = self.get_available_dates(appointment_type)
-      # print('\nall:')
-      # [print(d['date'], d['day'], d['times']) for d in dates]
-
-      filename = 'logs/no-dates-{}.png'.format(datetime.date.today())
-      self.save_screenshot(filename)
-
-      # filter the available dates
-
-      dates = self.filter_by_unreserved(dates, person) # by only those that this person has not yet reserved
-      # print('\nunreserved dates:')
-      # [print(d['date'], d['day'], d['times']) for d in dates]
-
-      dates = self.filter_by_time_preferences(dates, person) # by only those with times that match the person's preferences
-      # print('\npreferred dates:')
-      # [print(d['date'], d['day'], d['times']) for d in dates]
-
-      dates = self.limit_per_day(dates) # for any day with multiple times, keep only the first time
-      # print('\nlimit 1 per day:')
-      # [print(d['date'], d['day'], d['times']) for d in dates]
-
-      dates = self.limit_per_week(dates, person, max_per_week) # limit the number of reservations per week we book
-      # print('\nlimit 3 per week:')
-      # [print(d['date'], d['day'], d['times']) for d in dates]
-      
-      # proceed if we have dates to reserve
-      if len(dates) > 0:
-
-        # click on the date/times we want to reserve
-        self.select_dates(dates)
-
-        # fill in personal details
-        self.enter_personal_details(person)
-
-        # submit the form
-        self.submit_form()
-
-        # save reservation
-        self.save_reservation(dates, person)
-
-        # save screenshot
-        clean_dates = '-'.join(['{}{}'.format(d['date'], '-'.join([t['time'] for t in d['times']])) for d in dates])  # string of dates
-        filename = 'logs/{}-{}-{}.png'.format(person.last_name, person.first_name, clean_dates)
-        self.save_screenshot(filename)
-
-    except Exception as e:
-      # the desired appointment type was not found
-      self.log('Error: {}'.format(repr(e)))
-
-    # open the web site in google chrome
-    if hasattr(self, 'driver'):
-      self.end_session()
+    # end for
 
   def start_session(self, url, hidden=True):
     """
@@ -545,7 +550,7 @@ class ReservationBot():
     try:
       # save screenshot of entire page
       container = self.driver.find_element_by_css_selector('.content')
-      total_height = container.size["height"] + 500 # max out the height
+      total_height = container.size["height"] + 100 # max out the height
       self.driver.set_window_size(1000, total_height) #the trick
       self.driver.save_screenshot(filename)
       self.log('Saved screenshot to {}'.format(filename))
