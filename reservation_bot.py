@@ -38,6 +38,9 @@ class ReservationBot():
       # print('\nall:')
       # [print(d['date'], d['day'], d['times']) for d in dates]
 
+      filename = 'logs/no-dates-{}.png'.format(datetime.date.today())
+      self.save_screenshot(filename)
+
       # filter the available dates
 
       dates = self.filter_by_unreserved(dates, person) # by only those that this person has not yet reserved
@@ -92,6 +95,7 @@ class ReservationBot():
     """
     # open the webdriver
     chrome_options = webdriver.ChromeOptions()  # set some options
+    chrome_options.add_argument('--start-maximized') # max height
     if hidden:
       # hide Chrome from user
       chrome_options.add_argument("--headless")
@@ -538,9 +542,11 @@ class ReservationBot():
     filename = filename.replace(':', '')
     filename = filename.replace('(', '-')
     filename = filename.replace(')', '-')
-    # body = driver.find_element_by_tag_name('body')
-    # body.save_screeenshot(filename)
     try:
+      # save screenshot of entire page
+      container = self.driver.find_element_by_css_selector('.content')
+      total_height = container.size["height"] + 500 # max out the height
+      self.driver.set_window_size(1000, total_height) #the trick
       self.driver.save_screenshot(filename)
       self.log('Saved screenshot to {}'.format(filename))
     except Exception as e:
