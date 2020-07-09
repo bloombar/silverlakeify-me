@@ -31,6 +31,7 @@ class ReservationBot():
     # loop through each desired appointment_type
     for appointment_type in appointment_types:
 
+      # try to run the bot for this appouintment type
       try:
 
         # open the web site in google chrome

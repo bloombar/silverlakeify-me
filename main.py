@@ -15,7 +15,7 @@ def main():
   # - Comment out a day entirely to reserve any time on that day
   preferences = {
     # 'Monday': '11:30AM', # book only this time
-    # 'Tuesday': '3:30PM', # book ony this time
+    # 'Tuesday': '2:30PM', # book ony this time
     # 'Wednesday': '-', # do not book
     # book anytime Thursday, since a preference is not indicated here
     # 'Friday': '-', # do not book
