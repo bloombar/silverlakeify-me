@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Sign up for Silver Lake.
+A bot to sign up for Silver Lake during summer 2020.
 
 Selenium webdriver for Chrome (a.k.a. the file named chromedriver) must be installed in either:
 - in the same directory as chrome.exe on Windows (e.g. C:\Program Files\Google\Chrome\Application)
