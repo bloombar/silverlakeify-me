@@ -145,6 +145,28 @@ class ReservationBot():
     """
     self.logger.info(msg)
 
+  def log_available_dates(self, dates, message):
+    """
+    Logs a set of available dates in a nicely formatted compact manner.
+    :param dates: The dates to log, as a list of dictionaries.
+    :param message: Text to output next to the dates.
+    """
+    # check for no dates
+    if len(dates) <= 0:
+      self.log('{}: none.'.format(message))
+      return
+
+    # loop through each date
+    available_dates = []
+    for d in dates:
+      # get a list of the available times on this date
+      times = ','.join([t['time'] for t in d['times']])
+      dt = '{} @ {}'.format(d['date'], times) # the date and times
+      available_dates.append(dt) # add to list
+
+    log_dates = ','.join(available_dates)
+    self.log('{}: {}'.format(message, log_dates))
+
   def pause(self, seconds):
     """
     Pause for specified number of seconds.
@@ -211,7 +233,7 @@ class ReservationBot():
     available_dates = self.driver.find_elements_by_css_selector('#dates-and-times > fieldset')
     available_dates = [d for d in available_dates if d.is_displayed()] # limit to those that are visible
 
-    self.log("Found {} available dates.".format(len(available_dates)))
+    # self.log("Found {} available dates.".format(len(available_dates)))
 
     # loop through each date and append a nicely-formatted version to a list
     dates = []
@@ -244,9 +266,7 @@ class ReservationBot():
       dates.append(date_data)
 
     # if you got it, log it
-    if len(dates) > 0:
-      log_dates = ','.join([d['date'] for d in dates])
-      self.log('Found dates: {}'.format(log_dates))
+    self.log_available_dates(dates, 'Available "{}" dates'.format(appointment_type))
 
     return dates
 
@@ -258,6 +278,10 @@ class ReservationBot():
     :param match_times: Whether to filter out any dates for which existing reservations exist, regardless of times
     :returns: The list of dates with existing reserved dates removed.
     """
+    # do nothing further if no dates
+    if len(dates) == 0:
+      return []
+
     reservations = self.get_reservations(person)
 
     good_dates = dates.copy()  # assume they're all good for now
@@ -278,7 +302,8 @@ class ReservationBot():
           good_dates.remove(date)
           break  # quit this loop
         
-    self.log("Found {} unreserved dates.".format(len(good_dates)))
+    # if you got it, log it
+    self.log_available_dates(good_dates, 'Filtered by unreserved dates')
 
     return good_dates
 
@@ -289,6 +314,9 @@ class ReservationBot():
     :param person: The person for whom to do the filtering.
     :returns: The list of dates with existing reserved dates removed.
     """
+    # do nothing further if no dates
+    if len(dates) == 0:
+      return []
 
     good_dates = dates.copy()  # assume they're all good for now
     
@@ -319,7 +347,8 @@ class ReservationBot():
       # update the good dates list with this change
       good_dates[pos] = date
 
-    self.log("Found {} preferred times.".format(len(good_dates)))
+    # if you got it, log it
+    self.log_available_dates(good_dates, 'Filtered by preferred times')
 
     return good_dates
 
@@ -329,6 +358,10 @@ class ReservationBot():
     :param dates: A list of dates.
     :returns: The updated list of dates
     """
+    # do nothing further if no dates
+    if len(dates) == 0:
+      return []
+
     good_dates = dates.copy()
 
     # loop through all dates
@@ -336,9 +369,12 @@ class ReservationBot():
       # check how many times are available this day
       if len(d['times']) > 1:
         # there are multiple times available on this date... got with first
-        self.log('Reservation for {} available at multiple times... skipping all but first time.'.format(d['date']))
+        # self.log('Reservation for {} available at multiple times... skipping all but first time.'.format(d['date']))
         d['times'] = d['times'][0:1] # remove all but the first available time
-        self.log("Limiting to only 1 reservation on {}.".format(d['date']))
+        # self.log("Limiting to only 1 reservation on {}.".format(d['date']))
+
+    # if you've got it, log it
+    self.log_available_dates(good_dates, 'Limited to one time per day')
 
     # return the updated list
     return good_dates
@@ -351,6 +387,10 @@ class ReservationBot():
     :param max_per_week: The maximum number of reservations per week we desire.
     :returns: The updated list of dates
     """
+    # do nothing further if no dates
+    if len(dates) == 0:
+      return []
+
     counts = {} # will hold counts of number of reservations each week
 
     # loop through all existing reservations
@@ -370,12 +410,13 @@ class ReservationBot():
       # if we are over the limit, remove this date
       if max_per_week - count <= 0:
         # we have reached the weekly limit... no more
-        self.log('Weekly limit reached for {} {}... skipping {}.'.format(person.first_name, person.last_name, date['date']))
+        # self.log('Weekly limit reached for {} {}... skipping {}.'.format(person.first_name, person.last_name, date['date']))
         good_dates.remove(date) # remove it from consideration
       else:
         counts[str(week)] = counts.get(str(week), 0) + 1 # increment by one
 
-    self.log("Found {} dates within the weeekly limit.".format(len(good_dates)))
+    # if you've got it, log it
+    self.log_available_dates(good_dates, 'Limited to {} per week'.format(max_per_week))
 
     # return the updated list
     return good_dates
