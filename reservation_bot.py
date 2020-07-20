@@ -334,7 +334,7 @@ class ReservationBot():
       # remove dates for which the preferred time is not available
       if preferred_time not in date['times']:
         # the preferred time is not available
-        self.log('Reservation for {} not available at preferred time {}... skipping.'.format(date['date'], preferred_time))
+        # self.log('Reservation for {} not available at preferred time {}... skipping.'.format(date['date'], preferred_time))
         good_dates.remove(date) # remove it from the list
         continue
 
