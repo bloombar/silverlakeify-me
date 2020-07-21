@@ -297,7 +297,7 @@ class ReservationBot():
         # print(reservation['date'], date['date'], date_matches, '|', reservation['time'], [d['time'] for d in date['times']], time_matches)
         if (date_matches and time_matches) or (date_matches and not match_times):
           # we have a reservation that matches
-          self.log('Reservation for {} at {} aready exists... skipping.'.format(reservation['date'], reservation['time']))
+          # self.log('Reservation for {} at {} aready exists... skipping.'.format(reservation['date'], reservation['time']))
           # remove it from the good dates
           good_dates.remove(date)
           break  # quit this loop
@@ -592,7 +592,8 @@ class ReservationBot():
     filename = filename.replace(')', '-')
     try:
       # save screenshot of entire page
-      container = self.driver.find_element_by_css_selector('.content')
+      # container = self.driver.find_element_by_css_selector('.content') # seems to be not found in some cases
+      container = self.driver.find_element_by_tag_name('body')
       total_height = container.size["height"] + 100 # max out the height
       self.driver.set_window_size(1000, total_height) #the trick
       self.driver.save_screenshot(filename)
