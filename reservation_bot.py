@@ -422,10 +422,11 @@ class ReservationBot():
     return good_dates
 
 
-  def get_start_of_week(self, date):
+  def get_start_of_week(self, date, week_start_day=4):
     """
     Determine the date of the start of the week within which this date falls.
     :param date: A poorly-formatted date, without the year, such as 'July 10'
+    :param week_start_day: The day that is considered the start of the week, as ant where 0=Monday, 1=Tuesday, etc.
     :returns: The date of the start of the week within this date falls.
     """
     # use the current year, since the year is missing from the date
@@ -434,7 +435,16 @@ class ReservationBot():
     # convert date to date object
     date = '{} {}'.format(date, year) # tack on year to reservation date
     dt = datetime.datetime.strptime(date, '%B %d %Y')
-    week_start = dt - datetime.timedelta(days=dt.weekday())
+    # week_start = dt - datetime.timedelta(days=dt.weekday()) # if the week starts on Monday
+    # if the week starts on a different day, as is the case for this reservation system
+    if dt.weekday() >= week_start_day:
+      # for Friday (4), Saturday (5), or Sunday (6)...
+      offset = dt.weekday() - week_start_day # e.g., for Sunday: 6 - 4 = 2; for Saturday: 5 - 4 = 1, etc.
+    else:
+      # for days earlier than Friday (i.e., < 4)...
+      offset = dt.weekday() + (7 - week_start_day) # e.g., for Thursday 3 + 3 = 6; for Wednesday 2 + 3 = 5
+    # offset by as many days as necessary to get to Friday
+    week_start = dt - datetime.timedelta(days=offset)
     return week_start
 
   def get_reservations(self, person):
