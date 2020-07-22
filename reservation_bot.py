@@ -80,7 +80,7 @@ class ReservationBot():
           self.save_reservation(dates, person)
 
           # save screenshot
-          clean_dates = '-'.join(['{}{}'.format(d['date'], '-'.join([t['time'] for t in d['times']])) for d in dates])  # string of dates
+          clean_dates = '-'.join(['{}-{}'.format(d['date'], '-'.join([t['time'] for t in d['times']])) for d in dates])  # string of dates
           filename = 'logs/{}-{}-{}.png'.format(person.last_name, person.first_name, clean_dates)
           self.save_screenshot(filename)
 
@@ -557,6 +557,10 @@ class ReservationBot():
       email.send_keys(person.email)
 
     except Exception as e:
+      # save screenshot
+      filename = 'logs/error-form-personal-details-{}.png'.format(datetime.date.today())
+      self.save_screenshot(filename)
+
       # error occurred
       raise Exception('Error filling in personal details: {}'.format(e))
 
@@ -577,6 +581,10 @@ class ReservationBot():
       self.pause(2)
     except Exception as e:
       # handle failure
+      # save screenshot
+      filename = 'logs/error-form-submit-{}.png'.format(datetime.date.today())
+      self.save_screenshot(filename)
+
       # this is fatal.  Make sure program does not continue...
       raise Exception('Error submitting form: {}'.format(e))
 
