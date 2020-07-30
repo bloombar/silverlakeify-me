@@ -16,11 +16,10 @@ from selenium.webdriver.common.keys import Keys
 
 class ReservationBot():
 
-  def __init__(self, person, appointment_types=['11:30 and 2:30', '5:30'], max_per_week=3, hidden=True, log=True):
+  def __init__(self, person, max_per_week=3, hidden=True, log=True):
     """
     Instantiate the bot object with settings.
     :param person: The person object for whom to make a reservation.
-    :param appointment_types: A list of strings that uniquely match one of the available appointment types, such as "11:30 and 3:30" or "Senior Swim".
     :param max_per_week: The maximum number of reservations allowed per week.  Defaults to 3.
     :param hidden: Whether to show the web browser or keep it hidden.
     """
@@ -30,6 +29,7 @@ class ReservationBot():
       self.log('Starting for {} {}'.format(person.first_name, person.last_name))
 
     # loop through each desired appointment_type
+    appointment_types = person.appointment_types # how the site groups appointments e.g. ["11:30 and 2:30", "5:30", "Senior Swim"]. 
     for appointment_type in appointment_types:
 
       # try to run the bot for this appouintment type
